@@ -4582,7 +4582,386 @@ namespace OpenFFBoard
 			#endregion
 		}
 
-		public class BoardResponse
+        public class ExtFFB : BoardClass
+        {
+
+            private readonly Board _board;
+			public override ushort ClassId => 0xa03;
+            public override string Prefix => "fxm";
+
+            internal ExtFFB(Board board)
+            {
+                _board = board;
+            }
+
+
+            #region id
+            private readonly BoardCommand<long> _id = new BoardCommand<long>("id", 0x80000001, "ID of class", CmdTypes.Get);
+
+            /// <summary>
+            /// ID of class
+            /// </summary>
+            /// <returns></returns>
+            public long GetId()
+            {
+                return _id.GetValue(_board, this);
+            }
+            #endregion
+
+            #region name
+            private readonly BoardCommand<string> _name = new BoardCommand<string>("name", 0x80000002, "name of class", CmdTypes.Get | CmdTypes.String);
+
+            /// <summary>
+            /// name of class
+            /// </summary>
+            /// <returns></returns>
+            public string GetName()
+            {
+                return _name.GetValue(_board, this);
+            }
+            #endregion
+
+            #region help
+            private readonly BoardCommand<string> _help = new BoardCommand<string>("help", 0x80000003, "Prints help for commands", CmdTypes.Get | CmdTypes.Info | CmdTypes.String);
+
+            /// <summary>
+            /// Prints help for commands
+            /// </summary>
+            /// <returns></returns>
+            public string GetHelp()
+            {
+                return _help.GetValue(_board, this);
+            }
+
+            /// <summary>
+            /// Prints help for commands
+            /// </summary>
+            /// <returns></returns>
+            public string GetHelpInfo()
+            {
+                return _help.GetInfo(_board, this);
+            }
+            #endregion
+
+            #region cmduid
+            private readonly BoardCommand<long> _cmduid = new BoardCommand<long>("cmduid", 0x80000005, "Command handler index", CmdTypes.Get);
+
+            /// <summary>
+            /// Command handler index
+            /// </summary>
+            /// <returns></returns>
+            public long GetCmduid()
+            {
+                return _cmduid.GetValue(_board, this);
+            }
+            #endregion
+
+            #region instance
+            private readonly BoardCommand<long> _instance = new BoardCommand<long>("instance", 0x80000004, "Command handler instance number", CmdTypes.Get);
+
+            /// <summary>
+            /// Command handler instance number
+            /// </summary>
+            /// <returns></returns>
+            public long GetInstance()
+            {
+                return _instance.GetValue(_board, this);
+            }
+            #endregion
+
+            #region ffbstate
+            private readonly BoardCommand<byte> _ffbstate = new BoardCommand<byte>("ffbstate", 0x0, "FFB Active", CmdTypes.Get | CmdTypes.Set);
+
+            /// <summary>
+            /// Constant force filter frequency
+            /// </summary>
+            /// <returns></returns>
+            public ushort GetFFBState()
+            {
+                return _ffbstate.GetValue(_board, this);
+            }
+
+            /// <summary>
+            /// Constant force filter frequency
+            /// </summary>
+            /// <returns></returns>
+            public bool SetFFBState(byte newffbstate)
+            {
+                var query = _ffbstate.SetValue(_board, this, newffbstate);
+                return query.Type == CmdType.Request && query.ClassId == ClassId && query.Cmd == _ffbstate;
+            }
+
+            #endregion
+
+            #region reset
+            private readonly BoardCommand<bool> _reset = new BoardCommand<bool>("reset", 0x1, "Reset all effects or effect adr", CmdTypes.Get | CmdTypes.GetAddress);
+
+            /// <summary>
+            /// Constant force filter Q-factor
+            /// </summary>
+            /// <returns></returns>
+            public bool reset()
+            {
+                return _reset.GetValue(_board, this);
+            }
+
+            #endregion
+
+            #region neweffect
+            private readonly BoardCommand<long> _neweffect = new BoardCommand<long>("nev", 0x2, "new effect", CmdTypes.Set | CmdTypes.Info);
+
+           
+
+            /* Normal effects
+
+    Constant force = 1
+
+A constant force effect has only a magnitude value (and scaler per axis) and applies this magnitude directly as a constant output torque.
+Periodic effects
+
+    Ramp = 2
+    Square = 3
+    Sine = 4
+    Triangle = 5
+    Sawtooth up/down = 6/7
+
+Periodic effects have a magnitude and period and can also have an envelope and phase which is not currently accessible in this mode.
+Conditional effects
+
+    Spring = 8
+    Damper = 9
+    Inertia = 10
+    Friction = 11
+
+            */
+            /// <summary>
+            /// new effect
+            /// </summary>
+            /// <returns>address of new effect</returns>
+            public long SetNewEffect(byte neweffect)
+            {
+                var query = _neweffect.SetValue(_board, this, neweffect);
+				if (query.Type == CmdType.Request && query.ClassId == ClassId && query.Cmd == _neweffect)
+				{
+					return (long)query.Address;
+				}
+				else
+				{
+					return -1;
+				}
+            }
+
+
+
+            #endregion
+
+
+
+            #region magnitude
+            private readonly BoardCommand<ushort> _magnitude = new BoardCommand<ushort>("mag", 0x4, "magnitude", CmdTypes.SetAddress | CmdTypes.GetAddress );
+
+            /// <summary>
+            /// Spring gain
+            /// </summary>
+            /// <returns></returns>
+            public ushort getMagnitude()
+            {
+                return _magnitude.GetValue(_board, this);
+            }
+
+            /// <summary>
+            /// new effect
+            /// </summary>
+            /// <returns>address of new effect</returns>
+            public bool setMagnitude(ushort magnitude, long address)
+            {
+                var query = _magnitude.SetValue(_board, this, magnitude, (ulong) address);
+				return (query.Type == CmdType.RequestAddress && query.ClassId == ClassId && query.Cmd == _magnitude);
+            }
+
+
+
+            #endregion
+
+
+
+            #region state
+            private readonly BoardCommand<ushort> _state = new BoardCommand<ushort>("state", 0x5, "state", CmdTypes.SetAddress | CmdTypes.GetAddress);
+
+            /// <summary>
+            /// Spring gain
+            /// </summary>
+            /// <returns></returns>
+            public ushort getState()
+            {
+                return _state.GetValue(_board, this);
+            }
+
+            /// <summary>
+            /// new effect
+            /// </summary>
+            /// <returns>address of new effect</returns>
+            public bool setState(ushort state, long address)
+            {
+                var query = _state.SetValue(_board, this, state, (ulong)address);
+                return (query.Type == CmdType.RequestAddress && query.ClassId == ClassId && query.Cmd == _state);
+            }
+
+
+            #endregion
+
+
+            #region period
+            private readonly BoardCommand<ushort> _period = new BoardCommand<ushort>("period", 0x6, "period", CmdTypes.SetAddress | CmdTypes.GetAddress);
+
+            /// <summary>
+            /// Spring gain
+            /// </summary>
+            /// <returns></returns>
+            public ushort getPeriod()
+            {
+                return _period.GetValue(_board, this);
+            }
+
+            /// <summary>
+            /// new effect
+            /// </summary>
+            /// <returns>address of new effect</returns>
+            public bool setPeriod(ushort period, long address)
+            {
+                var query = _period.SetValue(_board, this, period, (ulong)address);
+                return (query.Type == CmdType.RequestAddress && query.ClassId == ClassId && query.Cmd == _period);
+            }
+
+
+
+            #endregion
+
+            //#region friction
+            //private readonly BoardCommand<byte> _friction = new BoardCommand<byte>("friction", 0x4, "Friction gain", CmdTypes.Get | CmdTypes.Set | CmdTypes.Info);
+
+            ///// <summary>
+            ///// Friction gain
+            ///// </summary>
+            ///// <returns></returns>
+            //public byte GetFriction()
+            //{
+            //    return _friction.GetValue(_board, this);
+            //}
+
+            ///// <summary>
+            ///// Friction gain
+            ///// </summary>
+            ///// <returns></returns>
+            //public bool SetFriction(byte newFriction)
+            //{
+            //    var query = _friction.SetValue(_board, this, newFriction);
+            //    return query.Type == CmdType.Acknowledgment && query.ClassId == ClassId && query.Cmd == _friction;
+            //}
+
+
+            ///// <summary>
+            ///// Friction gain
+            ///// </summary>
+            ///// <returns></returns>
+            //public string GetFrictionInfo()
+            //{
+            //    return _friction.GetInfo(_board, this);
+            //}
+            //#endregion
+
+            //#region damper
+            //private readonly BoardCommand<byte> _damper = new BoardCommand<byte>("damper", 0x5, "Damper gain", CmdTypes.Get | CmdTypes.Set | CmdTypes.Info);
+
+            ///// <summary>
+            ///// Damper gain
+            ///// </summary>
+            ///// <returns></returns>
+            //public byte GetDamper()
+            //{
+            //    return _damper.GetValue(_board, this);
+            //}
+
+            ///// <summary>
+            ///// Damper gain
+            ///// </summary>
+            ///// <returns></returns>
+            //public bool SetDamper(byte newDamper)
+            //{
+            //    var query = _damper.SetValue(_board, this, newDamper);
+            //    return query.Type == CmdType.Acknowledgment && query.ClassId == ClassId && query.Cmd == _damper;
+            //}
+
+
+            ///// <summary>
+            ///// Damper gain
+            ///// </summary>
+            ///// <returns></returns>
+            //public string GetDamperInfo()
+            //{
+            //    return _damper.GetInfo(_board, this);
+            //}
+            //#endregion
+
+            //#region inertia
+            //private readonly BoardCommand<byte> _inertia = new BoardCommand<byte>("inertia", 0x6, "Inertia gain", CmdTypes.Get | CmdTypes.Set | CmdTypes.Info);
+
+            ///// <summary>
+            ///// Inertia gain
+            ///// </summary>
+            ///// <returns></returns>
+            //public byte GetInertia()
+            //{
+            //    return _inertia.GetValue(_board, this);
+            //}
+
+            ///// <summary>
+            ///// Inertia gain
+            ///// </summary>
+            ///// <returns></returns>
+            //public bool SetInertia(byte newInertia)
+            //{
+            //    var query = _inertia.SetValue(_board, this, newInertia);
+            //    return query.Type == CmdType.Acknowledgment && query.ClassId == ClassId && query.Cmd == _inertia;
+            //}
+
+
+            ///// <summary>
+            ///// Inertia gain
+            ///// </summary>
+            ///// <returns></returns>
+            //public string GetInertiaInfo()
+            //{
+            //    return _inertia.GetInfo(_board, this);
+            //}
+            //#endregion
+
+            //#region effects
+            //private readonly BoardCommand<string> _effects = new BoardCommand<string>("effects", 0x2, "List effects. set 0 to reset", CmdTypes.Get | CmdTypes.Set | CmdTypes.String);
+
+            ///// <summary>
+            ///// List effects. set 0 to reset
+            ///// </summary>
+            ///// <returns></returns>
+            //public string GetEffects()
+            //{
+            //    return _effects.GetValue(_board, this);
+            //}
+
+            ///// <summary>
+            ///// List effects. set 0 to reset
+            ///// </summary>
+            ///// <returns></returns>
+            //public bool SetEffects(string newEffects)
+            //{
+            //    var query = _effects.SetValue(_board, this, newEffects);
+            //    return query.Type == CmdType.Acknowledgment && query.ClassId == ClassId && query.Cmd == _effects;
+            //}
+
+            //#endregion
+        }
+
+        public class BoardResponse
 		{
 			public CmdType Type { get; set; }
 			public ushort ClassId { get; set; }

@@ -25,6 +25,7 @@ namespace OpenFFBoard
 			System = new Commands.System(this);
 			TMC4671Driver = new Commands.TMC4671Driver(this);
 			VESCDriver = new Commands.VESCDriver(this);
+			ExtFFB = new Commands.ExtFFB(this);
 		}
 
 		public Commands.AnalogAxes AnalogAxes { get; }
@@ -45,6 +46,8 @@ namespace OpenFFBoard
 		public Commands.System System { get; }
 		public Commands.TMC4671Driver TMC4671Driver { get; }
 		public Commands.VESCDriver VESCDriver { get; }
+
+		public Commands.ExtFFB ExtFFB { get; }	
 
 
 		public abstract void Connect();
